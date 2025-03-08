@@ -17,6 +17,9 @@ This document describes the current work focus, recent changes, next steps, and 
 - Updated the import statement in `App.tsx` to use the named import for `AddTaskModal`.
 - Fixed `TaskList.tsx` by removing duplicate imports and adding the missing `onEditClick` prop to the component definition.
 - Fixed `SortableTaskCard.tsx` by updating the component to use the `onEditClick` prop instead of `onEdit` for the edit button click handler.
+- Added a `useEffect` hook in `App.tsx` to fetch tasks from Supabase when the component mounts, so that tasks persist after page refresh.
+- Updated the `handleAddTask` function in `App.tsx` to properly format the new task data before adding it to the local state.
+- Updated the `onTaskDelete` function in `App.tsx` to delete tasks from the Supabase database, ensuring tasks are permanently deleted.
 
 ## Next Steps
 - Implement the remaining task management functionalities (edit, delete, complete).

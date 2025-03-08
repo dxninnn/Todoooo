@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Filter, Priority, SortBy, Task } from './types';
 import TaskList from './components/TaskList';
@@ -17,6 +17,45 @@ function App() {
   const [isDark, setIsDark] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch tasks from Supabase when component mounts
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('*');
+
+        if (error) {
+          console.error('Error fetching tasks:', error);
+          return;
+        }
+
+        if (data) {
+          // Map the data to the Task interface format
+          const formattedTasks: Task[] = data.map(task => ({
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            completed: task.completed,
+            priority: task.priority,
+            dueDate: task.due_date ? new Date(task.due_date) : undefined,
+            createdAt: new Date(task.created_at)
+          }));
+          
+          setTasks(formattedTasks);
+        }
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -55,6 +94,7 @@ function App() {
           description: task.description,
           priority: task.priority,
           due_date: task.dueDate,
+          completed: false,
         },
       ])
       .select();
@@ -64,9 +104,21 @@ function App() {
       return;
     }
 
-    const newTask = data[0];
-    setTasks([...tasks, newTask]);
-    setIsModalOpen(false);
+    if (data && data.length > 0) {
+      // Format the new task to match the Task interface
+      const newTask: Task = {
+        id: data[0].id,
+        title: data[0].title,
+        description: data[0].description,
+        completed: data[0].completed,
+        priority: data[0].priority,
+        dueDate: data[0].due_date ? new Date(data[0].due_date) : undefined,
+        createdAt: new Date(data[0].created_at)
+      };
+      
+      setTasks([...tasks, newTask]);
+      setIsModalOpen(false);
+    }
   };
 
   return (
@@ -134,7 +186,19 @@ function App() {
                 )
               )
             }
-            onTaskDelete={(id) => setTasks(tasks.filter((t) => t.id !== id))}
+            onTaskDelete={async (id) => {
+              const { error } = await supabase
+                .from('tasks')
+                .delete()
+                .match({ id });
+        
+              if (error) {
+                console.error('Error deleting task:', error);
+                return;
+              }
+        
+              setTasks(tasks.filter((t) => t.id !== id));
+            }}
             onTaskEdit={(task) =>
               setTasks(tasks.map((t) => (t.id === task.id ? task : t)))
             }
