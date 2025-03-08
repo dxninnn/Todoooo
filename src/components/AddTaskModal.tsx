@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Priority, Task } from '../types';
 import Button from './ui/Button';
 import { X } from 'lucide-react';
@@ -8,22 +8,51 @@ interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
+  taskToEdit: Task | null;
+  onEdit: (task: Task) => void;
 }
 
-const AddTaskModal = ({ isOpen, onClose, onAdd }: AddTaskModalProps) => {
+const AddTaskModal = ({ isOpen, onClose, onAdd, taskToEdit, onEdit }: AddTaskModalProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
   const [dueDate, setDueDate] = useState('');
 
+  useEffect(() => {
+    if (taskToEdit) {
+      setTitle(taskToEdit.title);
+      setDescription(taskToEdit.description || '');
+      setPriority(taskToEdit.priority);
+      setDueDate(taskToEdit.dueDate ? taskToEdit.dueDate.toISOString().slice(0, 10) : '');
+    } else {
+      setTitle('');
+      setDescription('');
+      setPriority('medium');
+      setDueDate('');
+    }
+  }, [taskToEdit]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd({
-      title,
-      description,
-      priority,
-      dueDate: dueDate ? new Date(dueDate) : undefined,
-    });
+    if (taskToEdit) {
+      // Implement update task functionality
+      onEdit({
+        id: taskToEdit.id,
+        title,
+        description,
+        priority,
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        completed: taskToEdit.completed,
+        createdAt: taskToEdit.createdAt,
+      });
+    } else {
+      onAdd({
+        title,
+        description,
+        priority,
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+      });
+    }
     setTitle('');
     setDescription('');
     setPriority('medium');
@@ -50,7 +79,7 @@ const AddTaskModal = ({ isOpen, onClose, onAdd }: AddTaskModalProps) => {
           >
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Add New Task
+                {taskToEdit ? 'Edit Task' : 'Add New Task'}
               </h2>
               <Button
                 variant="ghost"
@@ -148,7 +177,7 @@ const AddTaskModal = ({ isOpen, onClose, onAdd }: AddTaskModalProps) => {
                   type="submit"
                   className="bg-purple-600 px-6 hover:bg-purple-700"
                 >
-                  Add Task
+                  {taskToEdit ? 'Update Task' : 'Add Task'}
                 </Button>
               </div>
             </form>
@@ -159,4 +188,4 @@ const AddTaskModal = ({ isOpen, onClose, onAdd }: AddTaskModalProps) => {
   );
 };
 
-export default AddTaskModal;
+export { AddTaskModal };

@@ -11,6 +11,7 @@ interface SortableTaskCardProps {
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (task: Task) => void;
+  onEditClick: (task: Task) => void;
 }
 
 const priorityColors = {
@@ -24,6 +25,7 @@ const SortableTaskCard = ({
   onComplete,
   onDelete,
   onEdit,
+  onEditClick,
 }: SortableTaskCardProps) => {
   const {
     attributes,
@@ -106,7 +108,7 @@ const SortableTaskCard = ({
 
       <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         <button
-          onClick={() => onEdit(task)}
+          onClick={() => onEditClick(task)}
           className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-purple-100 hover:text-purple-600 dark:hover:bg-purple-900 dark:hover:text-purple-400"
         >
           <Pencil className="h-4 w-4" />

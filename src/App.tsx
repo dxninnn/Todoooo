@@ -4,7 +4,7 @@ import { Filter, Priority, SortBy, Task } from './types';
 import TaskList from './components/TaskList';
 import Button from './components/ui/Button';
 import { Plus, Moon, Sun, ListTodo } from 'lucide-react';
-import AddTaskModal from './components/AddTaskModal';
+import { AddTaskModal } from './components/AddTaskModal';
 
 const supabaseUrl = 'https://iimidfnxdbqvslfsfndu.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpbWlkZm54ZGJxdnNsZnNmbmR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzNjUwMzIsImV4cCI6MjA1Njk0MTAzMn0.5b7U4mrmMpQ-TzLIbD5G50ptkZ_E5sm5_uZdNlcJz5Q';
@@ -16,6 +16,7 @@ function App() {
   const [sortBy, setSortBy] = useState<SortBy>('createdAt');
   const [isDark, setIsDark] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -30,7 +31,11 @@ function App() {
     })
     .sort((a, b) => {
       if (sortBy === 'priority') {
-        const priority = { low: 0, medium: 1, high: 2 };
+        const priority: { [key in Priority]: number } = {
+          low: 0,
+          medium: 1,
+          high: 2,
+        };
         return priority[b.priority] - priority[a.priority];
       }
       if (sortBy === 'dueDate') {
@@ -134,6 +139,10 @@ function App() {
               setTasks(tasks.map((t) => (t.id === task.id ? task : t)))
             }
             onTaskReorder={setTasks}
+            onEditClick={(task) => {
+              setTaskToEdit(task);
+              setIsModalOpen(true);
+            }}
           />
           {filteredTasks.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
@@ -149,6 +158,12 @@ function App() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAdd={handleAddTask}
+        taskToEdit={taskToEdit}
+        onEdit={(updatedTask: Task) => {
+          setTasks(tasks.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+          setIsModalOpen(false);
+          setTaskToEdit(null);
+        }}
       />
     </div>
   );

@@ -19,13 +19,13 @@ import SortableTaskCard from './SortableTaskCard';
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-
 interface TaskListProps {
   tasks: Task[];
   onTaskComplete: (id: string) => void;
   onTaskDelete: (id: string) => void;
   onTaskEdit: (task: Task) => void;
   onTaskReorder: (tasks: Task[]) => void;
+  onEditClick: (task: Task) => void;
 }
 
 const TaskList = ({
@@ -34,6 +34,7 @@ const TaskList = ({
   onTaskDelete,
   onTaskEdit,
   onTaskReorder,
+  onEditClick,
 }: TaskListProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -71,6 +72,7 @@ const TaskList = ({
                 onComplete={onTaskComplete}
                 onDelete={onTaskDelete}
                 onEdit={onTaskEdit}
+                onEditClick={onEditClick}
               />
             ))}
           </AnimatePresence>
